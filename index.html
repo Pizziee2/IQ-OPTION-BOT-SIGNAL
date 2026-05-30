@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IQ SIGNAL MATRIX - BROKER SPLIT</title>
+    <style>
+        :root {
+            --bg-base: #060913;
+            --panel-bg: rgba(18, 26, 47, 0.65);
+            --panel-border: rgba(255, 255, 255, 0.07);
+            --primary-green: #00ff88;
+            --danger-red: #ff3366;
+            --gold: #ffb300;
+            --electric-blue: #00d2ff;
+            --text-main: #ffffff;
+            --text-muted: #6b7c96;
+            --glow-green: rgba(0, 255, 136, 0.15);
+            --glow-red: rgba(255, 51, 102, 0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            background: var(--panel-bg);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--panel-border);
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .header {
+            background: linear-gradient(180deg, rgba(22, 35, 65, 0.8), rgba(18, 26, 47, 0));
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text-main);
+            letter-spacing: 1.5px;
+            font-weight: 900;
+        }
+
+        .header h1 span {
+            color: var(--electric-blue);
+        }
+
+        .header p {
+            margin: 6px 0 0 0;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .workspace {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            background-color: rgba(10, 15, 28, 0.9);
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        optgroup {
+            background-color: var(--bg-base);
+            color: var(--gold);
+        }
+
+        option {
+            color: var(--text-main);
+            background-color: rgba(10, 15, 28, 0.95);
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--electric-blue), #0088ff);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-action:disabled {
+            background: #1e2538;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .cooldown-indicator {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 13px;
+            color: var(--danger-red);
+            font-weight: 700;
+            display: none;
+        }
+
+        .signal-box {
+            margin-top: 24px;
+            display: none;
+            background-color: rgba(7, 11, 20, 0.85);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .signal-header {
+            font-weight: 800;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 12px;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .direction-banner {
+            grid-column: span 2;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .banner-buy {
+            background: var(--glow-green);
+            border: 1px solid var(--primary-green);
+            color: var(--primary-green);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+        }
+
+        .banner-sell {
+            background: var(--glow-red);
+            border: 1px solid var(--danger-red);
+            color: var(--danger-red);
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
+        }
+
+        .martingale-section {
+            margin-top: 16px;
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .martingale-title {
+            font-size: 11px;
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .m-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.03);
+        }
+
+        .m-row:last-child { border-bottom: none; }
+
+        .m-level { color: var(--text-muted); font-weight: 600; }
+        .m-time { font-weight: 700; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>IQ <span>DASHBOARD</span> MULTI</h1>
+        <p>Dynamic Market Router Configuration</p>
+    </div>
+
+    <div class="workspace">
+        <div class="form-group">
+            <label>Select Target Option Feed Channel</label>
+            <select id="asset-choice">
+                <optgroup label="🏛️ LIVE MARKETS (WEEKDAY STREAM)">
+                    <option value="EUR/USD (LIVE)">EUR/USD (Live Feed)</option>
+                    <option value="GBP/USD (LIVE)">GBP/USD (Live Feed)</option>
+                    <option value="USD/JPY (LIVE)">USD/JPY (Live Feed)</option>
+                    <option value="AUD/USD (LIVE)">AUD/USD (Live Feed)</option>
+                    <option value="USD/CHF (LIVE)">USD/CHF (Live Feed)</option>
+                    <option value="EUR/GBP (LIVE)">EUR/GBP (Live Feed)</option>
+                </optgroup>
+                <optgroup label="🎰 OTC MARKETS (BROKER GENERATED)">
+                    <option value="EUR/USD (OTC)">EUR/USD (OTC Internal)</option>
+                    <option value="GBP/USD (OTC)">GBP/USD (OTC Internal)</option>
+                    <option value="USD/JPY (OTC)">USD/JPY (OTC Internal)</option>
+                    <option value="AUD/USD (OTC)">AUD/USD (OTC Internal)</option>
+                    <option value="USD/CHF (OTC)">USD/CHF (OTC Internal)</option>
+                    <option value="EUR/GBP (OTC)">EUR/GBP (OTC Internal)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <button class="btn-action" id="trigger-btn" onclick="queryMarketMatrix()">Generate Target Matrix</button>
+        <div class="cooldown-indicator" id="cooldown-area">ROUTING SYNCHRONIZATION COOLDOWN: <span id="cooldown-clock">00:50</span></div>
+
+        <div class="signal-box" id="signal-panel">
+            <div class="signal-header">⚜️ PLATFORM ANALYSIS CORE</div>
+            
+            <div class="data-grid">
+                <div id="dir-banner" class="direction-banner">-</div>
+
+                <div class="metric-card">
+                    <span class="metric-label">Asset Target</span>
+                    <span class="metric-value" id="res-asset">-</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Market Engine</span>
+                    <span class="metric-value" id="res-mtype" style="color: var(--gold);">-</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Live Price quote</span>
+                    <span class="metric-value" id="res-price" style="color: var(--electric-blue);">-</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Calculated RSI</span>
+                    <span class="metric-value" id="res-rsi">-</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Data Pipeline Source</span>
+                    <span class="metric-value" id="res-source" style="font-size: 11px; color: var(--text-muted);">-</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Confidence Probability</span>
+                    <span class="metric-value" id="res-accuracy" style="color: var(--primary-green);">-</span>
+                </div>
+                <div class="metric-card" style="grid-column: span 2;">
+                    <span class="metric-label">Target Entry Time (2m Expiry Window)</span>
+                    <span class="metric-value" id="res-entry">-</span>
+                </div>
+            </div>
+
+            <div class="martingale-section">
+                <div class="martingale-title">🎯 Martingale Matrix Path Recovery</div>
+                <div class="m-row">
+                    <span class="m-level">🔄 Level 1 Execution</span>
+                    <span class="m-time" id="m-t1">-</span>
+                </div>
+                <div class="m-row">
+                    <span class="m-level">🔄 Level 2 Execution</span>
+                    <span class="m-time" id="m-t2">-</span>
+                </div>
+                <div class="m-row">
+                    <span class="m-level">🔄 Level 3 Execution</span>
+                    <span class="m-time" id="m-t3">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function queryMarketMatrix() {
+        const btn = document.getElementById('trigger-btn');
+        const cooldownArea = document.getElementById('cooldown-area');
+        const signalPanel = document.getElementById('signal-panel');
+        const selection = document.getElementById('asset-choice').value;
+
+        btn.disabled = true;
+        btn.innerText = "Routing Engine Connections...";
+        signalPanel.style.display = 'none';
+
+        try {
+const url =        `https://iq-signal-server.onrender.com/api/signal?asset=${encodeURIComponent(selection)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Backend system pipeline offline");
+            
+            const data = await response.json();
+
+            document.getElementById('res-asset').innerText = data.asset;
+            document.getElementById('res-mtype').innerText = data.market_type;
+            document.getElementById('res-price').innerText = data.price;
+            document.getElementById('res-rsi').innerText = data.rsi;
+            document.getElementById('res-source').innerText = data.source;
+            document.getElementById('res-accuracy').innerText = data.accuracy;
+            document.getElementById('res-entry').innerText = data.entry_time;
+            
+            const banner = document.getElementById('dir-banner');
+            banner.innerText = data.direction;
+            banner.className = data.direction.includes('BUY') ? "direction-banner banner-buy" : "direction-banner banner-sell";
+
+            document.getElementById('m-t1').innerText = data.martingale_l1;
+            document.getElementById('m-t2').innerText = data.martingale_l2;
+            document.getElementById('m-t3').innerText = data.martingale_l3;
+
+            signalPanel.style.display = 'block';
+
+        } catch (error) {
+            console.error(error);
+            alert("Matrix Fault: Check that your Termux engine backend server script is actively running!");
+            btn.disabled = false;
+            btn.innerText = "Generate Target Matrix";
+            return;
+        }
+
+        btn.innerText = "Generate Target Matrix";
+        cooldownArea.style.display = 'block';
+        let remaining = 50;
+        
+        const loop = setInterval(() => {
+            remaining--;
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            document.getElementById('cooldown-clock').innerText = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            if (remaining <= 0) {
+                clearInterval(loop);
+                btn.disabled = false;
+                cooldownArea.style.display = 'none';
+                document.getElementById('cooldown-clock').innerText = "00:50";
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+  </html>
+  
