@@ -67,7 +67,7 @@
 <script>
 async function getMatrixSignal() {
     const selection = document.getElementById("assetSelect").value;
-    const url = `https://iq-option-bot-signal.onrender.com/api/signal?asset=${encodeURIComponent(selection)}`;
+    const url = `https://iq-option-bot-backend-api.onrender.com/api/signal?asset=${encodeURIComponent(selection)}`;
     
     try {
         const response = await fetch(url);
