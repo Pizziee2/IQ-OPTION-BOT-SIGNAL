@@ -13,7 +13,7 @@ CORS(app)
 LOG_FILE = "trades_log.json"
 
 def save_signal_to_log(asset, market_type, price, direction, entry_time_str):
-    """Saves the requested signal into a local JSON log file for targeted backtesting"""
+    """Saves the exact requested signal into a local JSON log file for targeted backtesting"""
     log_data = []
     if os.path.exists(LOG_FILE):
         try:
@@ -40,21 +40,12 @@ def fetch_binance_feed(symbol):
     return [float(candle[4]) for candle in response.json()]
 
 def generate_realistic_otc_feed(asset_pair):
-    """
-    CORRECTED OTC FEED ENGINE:
-    Generates realistic pricing frameworks replicating broker OTC loops
-    """
+    """Generates realistic pricing frameworks replicating broker OTC loops"""
     base_prices = {
-        "EUR/USD": 1.08540,
-        "GBP/USD": 1.27210,
-        "USD/JPY": 156.450,
-        "AUD/USD": 0.66420,
-        "USD/CHF": 0.91150,
-        "EUR/GBP": 0.85320
+        "EUR/USD": 1.08540, "GBP/USD": 1.27210, "USD/JPY": 156.450,
+        "AUD/USD": 0.66420, "USD/CHF": 0.91150, "EUR/GBP": 0.85320
     }
-    # Grab the true real-world baseline price, default to 1.00000 if not found
     base = base_prices.get(asset_pair, 1.00000)
-    
     closes = []
     current = base
     random.seed(int(time.time()) + hash(asset_pair))
@@ -79,7 +70,7 @@ def compute_rsi(closes):
 def get_market_signal():
     ui_asset = request.args.get('asset', 'EUR/USD (LIVE)')
     is_otc = "OTC" in ui_asset
-    raw_pair = ui_asset.replace(" (LIVE)", "").replace(" (OTC)", "").strip()
+    raw_pair = ui_asset.replace(" (LIVE)", "").replace(" (OTC)", "").replace(" (OTC Internal)", "").strip()
     
     try:
         if is_otc:
@@ -94,28 +85,21 @@ def get_market_signal():
         live_rsi = compute_rsi(closes)
         moving_average = sum(closes[-7:]) / 7
         
-        direction = "BUY 🟩" if (live_rsi <= 45 or current_price < moving_average) else "SELL 🟥"
+        direction = "BUY 🟩" if (live_rsi <= 48 or current_price < moving_average) else "SELL 🟥"
 
         now = datetime.now()
         pad = lambda n: str(n).zfill(2)
         format_time = lambda t: f"{pad(t.hour % 12 or 12)}:{pad(t.minute)} {'PM' if t.hour >= 12 else 'AM'}"
         
         entry_time = now + timedelta(minutes=2)
-        
         price_str = f"{current_price:.5f}" if "JPY" not in raw_pair else f"{current_price:.3f}"
+        
         save_signal_to_log(raw_pair, "OTC" if is_otc else "LIVE", price_str, direction, format_time(entry_time))
 
-        # Returned JSON data includes fixed "source" parameters for your frontend interface card
         return jsonify({
-            "status": "success", 
-            "asset": raw_pair, 
-            "market_type": "OTC COMPLIANT" if is_otc else "REAL-TIME LIVE",
-            "source": feed_source,
-            "price": price_str, 
-            "rsi": f"{live_rsi:.2f}", 
-            "direction": direction, 
-            "accuracy": f"{81.0 + (live_rsi % 5):.2f}%",
-            "entry_time": format_time(entry_time),
+            "status": "success", "asset": raw_pair, "market_type": "OTC COMPLIANT" if is_otc else "REAL-TIME LIVE",
+            "source": feed_source, "price": price_str, "rsi": f"{live_rsi:.2f}", "direction": direction, 
+            "accuracy": f"{81.0 + (live_rsi % 5):.2f}%", "entry_time": format_time(entry_time),
             "martingale_l1": format_time(entry_time + timedelta(minutes=2)),
             "martingale_l2": format_time(entry_time + timedelta(minutes=4)),
             "martingale_l3": format_time(entry_time + timedelta(minutes=6))
@@ -125,3 +109,4 @@ def get_market_signal():
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=False)
+        
