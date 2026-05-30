@@ -351,7 +351,7 @@
         signalPanel.style.display = 'none';
 
         try {
-const url =        `https://iq-signal-server.onrender.com/api/signal?asset=${encodeURIComponent(selection)}`;
+            const url = `https://iq-option-bot-signal.onrender.com/api/signal?asset=${encodeURIComponent(selection)}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error("Backend system pipeline offline");
             
